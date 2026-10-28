@@ -1,0 +1,12 @@
+name: Rule-file guard
+description: Fail when AI agent instruction files (AGENTS.md, CLAUDE.md, .cursorrules, ...) tell an agent to install a package by name, change registries, or pipe a download into a shell.
+author: larai-w
+branding:
+  icon: shield
+  color: orange
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ github.workspace }}
+      run: python3 "${{ github.action_path }}/rule_file_guard.py"

@@ -1,0 +1,6 @@
+- id: rule-file-guard
+  name: rule-file guard
+  description: AI agent instruction files must not install packages by name, change registries, or pipe downloads into a shell.
+  entry: rule_file_guard.py
+  language: script
+  files: (^|/)(AGENTS\.md|CLAUDE\.md|GEMINI\.md|\.cursorrules|\.windsurfrules|copilot-instructions\.md)$
