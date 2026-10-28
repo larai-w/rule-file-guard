@@ -1,5 +1,7 @@
 # rule-file-guard
 
+[日本語](README.ja.md)
+
 A small check for the files coding agents read as instructions: `AGENTS.md`,
 `CLAUDE.md`, `GEMINI.md`, `.cursorrules`, `.windsurfrules` and
 `copilot-instructions.md`.
