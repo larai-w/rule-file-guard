@@ -1,5 +1,5 @@
 name: Rule-file guard
-description: Fail when AI agent instruction files (AGENTS.md, CLAUDE.md, .cursorrules, ...) tell an agent to install a package by name, change registries, or pipe a download into a shell.
+description: Fail when AI agent instruction files tell an agent to install a package by name, change registries, or pipe a download into a shell, or when they or a README/TODO hide instructions for an agent.
 author: larai-w
 branding:
   icon: shield

@@ -15,6 +15,21 @@ It fails when one of those files tells the agent to:
 Installing what the manifest already lists is fine: `npm install`, `npm ci`,
 `pip install -r requirements.txt`, `pip install -e .`, `uv sync`.
 
+Since v1.1.0 it also reads every `README*` and `TODO*` file, and fails when one
+of them, or one of the instruction files above, **hides an instruction for an
+agent**:
+
+- **invisible characters**: zero-width spaces and joiners, bidirectional
+  controls, word joiners, a byte-order mark in the middle of a file, Unicode tag
+  characters (emoji sequences and subdivision flags are allowed)
+- **an HTML comment that speaks to an agent**, such as a note or instructions
+  "for the AI", "if you are an AI …", or a comment that starts with
+  `Claude:` or `AI agents:`
+- **an override phrase** of the "ignore previous instructions" kind <!-- rule-file-guard: allow -->
+
+Install commands in a README are ordinary setup steps, so the package checks
+apply only to the instruction files.
+
 ## Why
 
 Agent instruction files run with the agent's permissions, change what gets
@@ -26,6 +41,14 @@ dependency with an attacker's package.
 
 Dependencies belong in the manifest and the lockfile, where review and
 Dependabot can see them. This check keeps them out of the instruction files.
+
+Agents read more than their instruction files. Another preprint (arXiv
+[2610.38867](https://arxiv.org/abs/2610.38867), not yet peer reviewed) holds
+the injected text fixed and moves it around a repository: an agent running on
+GPT-5.4 followed an unsafe instruction placed in a README or TODO file about
+2.6 times as often, on average, as the same instruction placed in a code or
+data file. A README is also the file a reviewer is most likely to skim. So the
+hidden-text checks cover README and TODO too.
 
 ## Use it as a GitHub Action
 
@@ -56,7 +79,7 @@ With [pre-commit](https://pre-commit.com):
 ```yaml
 repos:
   - repo: https://github.com/larai-w/rule-file-guard
-    rev: v1.0.0
+    rev: v1.1.0
     hooks:
       - id: rule-file-guard
 ```
@@ -65,7 +88,7 @@ Or copy `rule_file_guard.py` into your repository and call it from your own
 hook. It needs only Python 3.9+ and git.
 
 ```bash
-python3 rule_file_guard.py              # every tracked rule file
+python3 rule_file_guard.py              # every tracked rule, README and TODO file
 python3 rule_file_guard.py AGENTS.md    # only the files you name
 ```
 
@@ -82,9 +105,13 @@ pip install pre-commit  <!-- rule-file-guard: allow -->
 
 This is a pattern check, not a defence on its own.
 
-- It reads only the file names listed above.
-- It matches command forms. An instruction written in plain prose ("add the
-  package foo-utils before you start") or hidden in encoded text is not caught.
+- It reads only the file names listed above, plus `README*` and `TODO*`.
+  Instructions planted in code comments, issues, web pages or tool output are
+  out of its reach.
+- It matches command forms and a few known phrasings. An instruction written
+  in plain, visible prose ("add the package foo-utils before you start") or
+  hidden in encoded text is not caught. Visible prose in a README still needs a
+  human to read the diff.
 - It does not look at what a package is or whether it exists.
 
 Keep reviewing changes to instruction files like code, and keep dependencies
@@ -97,6 +124,11 @@ stopped a bare `npm install` and fired on ordinary setup steps in three of
 them, so it was narrowed to installs that name a package. A guard that stops
 too much gets ignored. `tests/test_rule_file_guard.py` keeps both lists: lines
 it must stop, and lines it must let through.
+
+Before the README and TODO checks were released, they were run over about 80
+local clones (my own repositories and several open-source forks, including a
+large frontend project). They flagged nothing, and the Next.js
+`BEGIN:nextjs-agent-rules` markers are in the let-through list.
 
 ## License
 
